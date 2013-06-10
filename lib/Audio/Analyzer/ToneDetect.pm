@@ -1,8 +1,145 @@
 package Audio::Analyzer::ToneDetect;
 
 use strict;
-use 5.008_005;
+use warnings;
+use 5.010;
+
 our $VERSION = '0.01';
+
+use Audio::Analyzer;
+use Carp;
+use Sort::Key::Top 'rnkeytop';
+
+sub new {
+    my ( $class, %args ) = @_;
+
+    my $self = bless {}, $class;
+
+    $self->{source}          = delete $args{source}          || \*STDIN;
+    $self->{sample_rate}     = delete $args{sample_rate}     || 16000;
+    $self->{chunk_size}      = delete $args{chunk_size}      || 1024;
+    $self->{chunk_max}       = delete $args{chunk_max}       || 70;
+    $self->{min_tone_length} = delete $args{min_tone_length} || 0.5;
+    $self->{valid_tones}     = delete $args{valid_tones};
+
+    if ( $self->{valid_tones} && $self->{valid_tones} eq 'builtin' ) {
+        $self->{valid_tones} = _get_builtin_tones();
+    }
+
+    croak(
+        "Invalid chunk_size ($self->{chunk_size}). chunk_size must be power of 2"
+    ) unless _is_pow_of_two( $self->{chunk_size} );
+
+    $self->{chunks_required}
+        = int(
+        $self->{min_tone_length} * $self->{sample_rate} / $self->{chunk_size} );
+
+    $self->{analyzer} = Audio::Analyzer->new(
+        file        => $self->{source},
+        sample_rate => $self->{sample_rate},
+        dft_size    => $self->{chunk_size},
+        channels    => 1,
+        %args
+    );
+
+    $self->{freqs} = $self->{analyzer}->freqs;
+
+    return $self;
+}
+
+sub get_next_tone {
+    my $self            = shift;
+    my $min_tone_length = shift;
+
+    state $last_detected = 0;
+    state @buff;
+
+    my $chunks_required;
+    if ($min_tone_length) {
+        $chunks_required = int(
+            $min_tone_length * $self->{sample_rate} / $self->{chunk_size} );
+    }
+    $chunks_required ||= $self->{chunks_required};
+
+    my $chunk_count = 0;
+    while ( $chunk_count < $self->{chunk_max} ) {
+        $chunk_count++;
+        my $chunk = $self->{analyzer}->next;
+        my $fft   = $chunk->fft;
+        my $top   = rnkeytop { $fft->[0][$_] } 1 => 0 .. $#{ $fft->[0] };
+        my $detected_freq = $self->{freqs}[$top];
+        next if $detected_freq == $last_detected;
+
+        push @buff, $detected_freq;
+        shift @buff if @buff > $chunks_required;
+        next unless @buff == $chunks_required && _all_match( \@buff );
+        $last_detected = $detected_freq;
+
+        return $detected_freq unless $self->{valid_tones};
+        return $self->find_closest_valid($detected_freq);
+    }
+    return;
+}
+
+sub find_closest_valid {
+    my ( $self, $freq ) = @_;
+    my ( $lower, $upper );
+    for my $possibility ( @{ $self->{valid_tones} } ) {
+        last if $upper;
+        $lower = $possibility if $possibility <= $freq;
+        $upper = $possibility if $possibility > $freq;
+    }
+    $upper ||= $lower;
+    my $valid_tone
+        = ( $freq - $lower ) < ( $upper - $freq )
+        ? $lower
+        : $upper;
+    return wantarray ? ( $valid_tone, $freq - $valid_tone ) : $valid_tone;
+}
+
+sub _all_match { my $l = shift; $_ == $l->[0] || return 0 for @$l; return 1 }
+
+sub _is_pow_of_two {
+
+    # if pow of 2 exactly 1 bit is set all others unset and n - 1 will have
+    # that bit unset and all lower bits set thus binary AND of n & n -1 will
+    # result in 0
+    return $_[0] != 0 && ( $_[0] & ( $_[0] - 1 ) ) == 0;
+}
+
+sub _get_builtin_tones {
+
+    # via http://sourceforge.net/projects/tonedetect/ not sure complete/accurate
+    # want better list
+
+    return [ ( qw (
+                282.2 288.5 294.7 296.5 304.7 307.8 313.0 321.4 321.7
+                330.5 335.6 339.6 346.7 349.0 350.5 358.6 358.9 366.0
+                368.5 371.5 378.6 382.3 384.6 389.0 398.1 399.2 399.8
+                410.8 412.1 416.9 422.1 426.6 433.7 435.3 441.6 445.7
+                454.6 457.1 457.9 470.5 473.2 474.8 483.5 489.8 495.8
+                496.8 507.0 510.5 517.5 517.8 524.6 524.8 532.5 539.0
+                540.7 543.3 547.5 553.9 562.3 562.5 564.7 569.1 577.5
+                582.1 584.8 589.7 592.5 600.9 602.6 604.2 607.5 615.8
+                617.4 622.5 623.7 631.5 634.5 637.5 640.6 643.0 645.7
+                651.9 652.6 662.3 667.5 668.3 669.9 672.0 682.5 688.3
+                691.8 693.0 697.5 701.0 707.3 712.5 716.7 726.8 727.1
+                727.5 732.0 741.3 746.8 757.5 761.3 765.0 767.4 767.4
+                772.5 787.5 788.5 794.3 795.4 799.0 802.5 810.2 817.5
+                822.2 832.5 832.5 832.9 834.0 847.5 851.1 855.5 862.5
+                870.5 871.0 877.5 879.0 881.0 892.5 903.2 907.9 910.0
+                911.5 912.0 922.5 928.1 937.5 944.1 950.0 952.4 952.5
+                953.7 967.5 977.2 979.9 984.4 992.0 996.8 1006.9 1011.6
+                1034.7 1036.0 1041.2 1047.1 1063.2 1082.0 1084.0 1089.0 1092.4
+                1122.1 1122.5 1130.0 1140.2 1153.4 1161.4 1180.0 1185.2 1191.4
+                1217.8 1232.0 1246.0 1251.4 1285.8 1287.0 1304.0 1321.2 1344.0
+                1357.6 1362.1 1395.0 1403.0 1423.5 1433.4 1465.0 1488.4 1530.0
+                1556.7 1598.0 1628.3 1642.0 1669.0 1717.1 1743.0 1795.6 1820.0
+                1877.5 1901.0 1985.0 2051.6 2073.0 2143.8 2164.0 2260.0 2341.8
+                2361.0 2447.6 2465.0 2556.9 2575.0 2672.9 2688.0 2792.4 2807.0
+                2932.0 3062.0 3197.0 3339.0 3487.0 )
+        ) ];
+}
 
 1;
 __END__
@@ -11,7 +148,7 @@ __END__
 
 =head1 NAME
 
-Audio::Analyzer::ToneDetect - Blah blah blah
+Audio::Analyzer::ToneDetect - Detect freq of tones in an audio file or stream
 
 =head1 SYNOPSIS
 
