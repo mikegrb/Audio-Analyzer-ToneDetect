@@ -7,7 +7,7 @@ Audio::Analyzer::ToneDetect - Detect freq of tones in an audio file or stream
     use Audio::Analyzer::ToneDetect;
     my $tone_detect = Audio::Analyzer::ToneDetect->new( source => \*STDIN );
     my $tone = $tone_detect->get_next_tone();
-    say "I head $tone!";
+    say "I heard $tone!";
 
 # DESCRIPTION
 
