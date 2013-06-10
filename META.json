@@ -1,5 +1,5 @@
 {
-   "abstract" : "Blah blah blah",
+   "abstract" : "Detect freq of tones in an audio file or stream",
    "author" : [
       "Mike Greb <michael@thegrebs.com>"
    ],
@@ -46,6 +46,20 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.01"
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/mikegrb/Audio-Analyzer-ToneDetect/issues"
+      },
+      "homepage" : "https://github.com/mikegrb/Audio-Analyzer-ToneDetect",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/mikegrb/Audio-Analyzer-ToneDetect.git",
+         "web" : "https://github.com/mikegrb/Audio-Analyzer-ToneDetect"
+      }
+   },
+   "version" : "0.01",
+   "x_contributors" : [
+      "mikegrb <mgreb@linode.com>"
+   ]
 }
 

@@ -21,6 +21,7 @@ sub new {
     $self->{chunk_max}       = delete $args{chunk_max}       || 70;
     $self->{min_tone_length} = delete $args{min_tone_length} || 0.5;
     $self->{valid_tones}     = delete $args{valid_tones};
+    $self->{valid_error_cb}  = delete $args{valid_error_cb};
 
     if ( $self->{valid_tones} && $self->{valid_tones} eq 'builtin' ) {
         $self->{valid_tones} = _get_builtin_tones();
@@ -81,6 +82,15 @@ sub get_next_tone {
     return;
 }
 
+sub get_next_two_tones {
+    my $self = shift;
+    my ( $tone_a_length, $tone_b_length ) = @_;
+
+    my $tone_a = $self->get_next_tone($tone_a_length) || return;
+    my $tone_b = $self->get_next_tone($tone_b_length) || return;
+    return wantarray ? ( $tone_a, $tone_b ) : "$tone_a $tone_b";
+}
+
 sub find_closest_valid {
     my ( $self, $freq ) = @_;
     my ( $lower, $upper );
@@ -94,6 +104,10 @@ sub find_closest_valid {
         = ( $freq - $lower ) < ( $upper - $freq )
         ? $lower
         : $upper;
+
+    $self->{valid_error_cb}->( $valid_tone, $freq, $freq - $valid_tone )
+        if $self->{valid_error_cb};
+
     return wantarray ? ( $valid_tone, $freq - $valid_tone ) : $valid_tone;
 }
 
@@ -153,10 +167,36 @@ Audio::Analyzer::ToneDetect - Detect freq of tones in an audio file or stream
 =head1 SYNOPSIS
 
   use Audio::Analyzer::ToneDetect;
+  my $tone_detect = Audio::Analyzer::ToneDetect->new( source => \*STDIN );
+  my $tone = $tone_detect->get_next_tone();
+  say "I head $tone!";
 
 =head1 DESCRIPTION
 
-Audio::Analyzer::ToneDetect is
+Audio::Analyzer::ToneDetect is a module for detecting single frequency tones
+in an audio stream or file.  It supports mono PCM data and defaults to STDIN.
+For supporting other formats, eg MP3, you can pipe things through sox.
+
+=head1 USAGE
+
+=head2 new
+
+This needs docs
+
+=head2 get_next_tone
+
+Returns the next detected tone in the stream.  Will return false if we go
+through chunk_max without detecting a tone but the buffer will be preserved
+between calls if the a tone begins just before hitting chunk_max.
+
+=head2 get_next_two_tones
+
+Calls get next tone twice.  Will return false if either tone returns false.
+
+=head2 find_closest_valid
+
+In scalar context, returns the closest valid tone in valid_tones.  In list
+context returns the closest valid tone and the delta from detected tone.
 
 =head1 AUTHOR
 
