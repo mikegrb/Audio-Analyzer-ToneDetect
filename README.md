@@ -71,6 +71,12 @@ Takes the following named parameters:
 
         valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_ }
 
+- rejected\_freqs undef or ARRAYREF
+
+    If specified, a reference to an array of frequencies that will be ignored. e.g
+    roger beeps, repeater beeps, etc.  Note, if you use valid tone detection, then
+    this is the raw detected tone, not the closest match.  Defaults to empty list.
+
 ## get\_next\_tone
 
 Returns the next detected tone in the stream.  Will return false if we go

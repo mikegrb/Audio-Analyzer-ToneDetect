@@ -22,6 +22,7 @@ sub new {
     $self->{min_tone_length} = delete $args{min_tone_length} || 0.5;
     $self->{valid_tones}     = delete $args{valid_tones};
     $self->{valid_error_cb}  = delete $args{valid_error_cb};
+    $self->{rejected_freqs}  = delete $args{rejected_freqs} || [];
 
     if ( $self->{valid_tones} && $self->{valid_tones} eq 'builtin' ) {
         $self->{valid_tones} = _get_builtin_tones();
@@ -70,6 +71,7 @@ sub get_next_tone {
         my $top   = rnkeytop { $fft->[0][$_] } 1 => 0 .. $#{ $fft->[0] };
         my $detected_freq = $self->{freqs}[$top];
         next if $detected_freq == $last_detected;
+        next if grep { $_ == $detected_freq } @{ $self->{rejected_freqs} };
 
         push @buff, $detected_freq;
         shift @buff if @buff > $chunks_required;
@@ -235,6 +237,12 @@ tone, the actual detected tone, the deference between the two in Hertz.
 Example:
 
   valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_ }
+
+=item rejected_freqs undef or ARRAYREF
+
+If specified, a reference to an array of frequencies that will be ignored. e.g
+roger beeps, repeater beeps, etc.  Note, if you use valid tone detection, then
+this is the raw detected tone, not the closest match.  Defaults to empty list.
 
 =back
 
