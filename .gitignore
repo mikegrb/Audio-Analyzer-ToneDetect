@@ -1,0 +1,6 @@
+/Audio-Analyzer-ToneDetect-*
+/.build
+/_build*
+/Build
+MYMETA.*
+!META.json
