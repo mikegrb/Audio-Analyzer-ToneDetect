@@ -38,7 +38,7 @@ Takes the following named parameters:
 
 - chunk\_size 1024
 
-    Number of samples to analyze at once.  Coresponds to dft\_size in Audio::Analyzer.
+    Number of samples to analyze at once.  Corresponds to dft\_size in [Audio::Analyzer](http://search.cpan.org/perldoc?Audio::Analyzer).
     Must be a power of 2.  Defaults to 1024.
 
 - chunk\_max 70
@@ -102,3 +102,7 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 # SEE ALSO
+
+[Audio::Analyzer](http://search.cpan.org/perldoc?Audio::Analyzer)
+
+[Math::FFT](http://search.cpan.org/perldoc?Math::FFT)

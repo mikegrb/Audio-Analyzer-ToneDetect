@@ -203,7 +203,7 @@ Defaults to 16000.
 
 =item chunk_size 1024
 
-Number of samples to analyze at once.  Coresponds to dft_size in Audio::Analyzer.
+Number of samples to analyze at once.  Corresponds to dft_size in L<Audio::Analyzer>.
 Must be a power of 2.  Defaults to 1024.
 
 =item chunk_max 70
@@ -269,5 +269,9 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =head1 SEE ALSO
+
+L<Audio::Analyzer>
+
+L<Math::FFT>
 
 =cut
