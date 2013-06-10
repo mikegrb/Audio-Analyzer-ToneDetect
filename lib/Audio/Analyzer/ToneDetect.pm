@@ -93,7 +93,9 @@ sub get_next_two_tones {
 
 sub find_closest_valid {
     my ( $self, $freq ) = @_;
-    my ( $lower, $upper );
+    my $lower = 0;
+    my $upper;
+
     for my $possibility ( @{ $self->{valid_tones} } ) {
         last if $upper;
         $lower = $possibility if $possibility <= $freq;
@@ -173,21 +175,76 @@ Audio::Analyzer::ToneDetect - Detect freq of tones in an audio file or stream
 
 =head1 DESCRIPTION
 
+Consider this alpha software.  It is still under fairly active development and
+the interface may change in incompatible ways.
+
 Audio::Analyzer::ToneDetect is a module for detecting single frequency tones
 in an audio stream or file.  It supports mono PCM data and defaults to STDIN.
 For supporting other formats, eg MP3, you can pipe things through sox.
 
 =head1 USAGE
 
-=head2 new
+=head2 new (%opts)
 
-This needs docs
+Takes the following named parameters:
+
+=over 4
+
+=item source \*FH or $path
+
+The audio source.  Only Mono PCM is supported.  You can pass the path to a WAV
+file or a file handle for an open file or stream.  Defaults to STDIN.
+
+
+=item sample_rate 16000
+
+Source sample rate, results will be orders of magnitude off if set incorrectly.
+Defaults to 16000.
+
+=item chunk_size 1024
+
+Number of samples to analyze at once.  Coresponds to dft_size in Audio::Analyzer.
+Must be a power of 2.  Defaults to 1024.
+
+=item chunk_max 70
+
+Maximum number of chunks to process before returning.  Returns false if it
+reaches this number of chunks without detecting a tone. With default chunk_size
+and sample_rate, the default of 70 equates to about 4.5 seconds of audio.
+
+=item min_tone_length 0.5
+
+Minimum durration of a tone, in seconds, before we consider it detected.  Due to
+sample rate, chunk size, and integer math, with defaults this ends up being
+0.448 seconds.  The formula for actual seconds is int( min_length * sample_rate
+/ chunk_size ) * chunk_size / sample_rate.  Default to 0.5
+
+=item valid_tones undef, 'builtin', or ARRAYREF
+
+A list of valid (expected) tones.  If supplied, the closest expected tone for
+a given detected tone is returned. Call get_next_tone() in list context or
+supply the following call back if you want both values.  A value of 'builtin'
+uses a builtin list of valid classic Motorola Minitor tones.  Defaults to unset.
+
+=item valid_error_cb
+
+A callback that if provided and valid_tones is set will be called just before
+get_next_tone or find_closest_valid returns.  Arguments are the closest valid
+tone, the actual detected tone, the deference between the two in Hertz.
+
+Example:
+
+  valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_ }
+
+=back
 
 =head2 get_next_tone
 
 Returns the next detected tone in the stream.  Will return false if we go
 through chunk_max without detecting a tone but the buffer will be preserved
-between calls if the a tone begins just before hitting chunk_max.
+between calls if the a tone begins just before hitting chunk_max.  If valid_tones
+was supplied, returns the result of passing the tone to find_closest_valid(),
+following it's list vs scalar semantics.
 
 =head2 get_next_two_tones
 
