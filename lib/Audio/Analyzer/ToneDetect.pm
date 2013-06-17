@@ -22,7 +22,7 @@ sub new {
     $self->{min_tone_length} = delete $args{min_tone_length} || 0.5;
     $self->{valid_tones}     = delete $args{valid_tones};
     $self->{valid_error_cb}  = delete $args{valid_error_cb};
-    $self->{rejected_freqs}  = delete $args{rejected_freqs} || [];
+    $self->{rejected_freqs}  = delete $args{rejected_freqs}  || [];
 
     if ( $self->{valid_tones} && $self->{valid_tones} eq 'builtin' ) {
         $self->{valid_tones} = _get_builtin_tones();
@@ -47,6 +47,12 @@ sub new {
     $self->{freqs} = $self->{analyzer}->freqs;
 
     return $self;
+}
+
+sub valid_tones {
+    my ( $self, $new_tone_map ) = @_;
+    $self->{valid_tones} = $new_tone_map if $new_tone_map;
+    return $self->{valid_tones};
 }
 
 sub get_next_tone {
@@ -246,6 +252,14 @@ this is the raw detected tone, not the closest match.  Defaults to empty list.
 
 =back
 
+=head2 valid_tones
+
+Returns the arraref of valid tones currently being used.  Optionally takes a
+reference to an array of new tones to use as the valid list.  Make sure the list
+is in numerical order as an optimization is used for searching for the closest
+match that requires it be in order.
+
+
 =head2 get_next_tone
 
 Returns the next detected tone in the stream.  Will return false if we go
@@ -269,7 +283,7 @@ Mike Greb E<lt>michael@thegrebs.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2013- Mike Greb
+Copyright 2013 - Mike Greb
 
 =head1 LICENSE
 
