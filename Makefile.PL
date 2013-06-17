@@ -19,7 +19,10 @@ my %WriteMakefileArgs = (
   "EXE_FILES" => [],
   "LICENSE" => "perl",
   "NAME" => "Audio::Analyzer::ToneDetect",
-  "PREREQ_PM" => {},
+  "PREREQ_PM" => {
+    "Audio::Analyzer" => 0,
+    "Sort::Key::Top" => 0
+  },
   "TEST_REQUIRES" => {
     "Test::More" => "0.88"
   },

@@ -77,6 +77,15 @@ Takes the following named parameters:
     roger beeps, repeater beeps, etc.  Note, if you use valid tone detection, then
     this is the raw detected tone, not the closest match.  Defaults to empty list.
 
+## valid\_tones
+
+Returns the arraref of valid tones currently being used.  Optionally takes a
+reference to an array of new tones to use as the valid list.  Make sure the list
+is in numerical order as an optimization is used for searching for the closest
+match that requires it be in order.
+
+
+
 ## get\_next\_tone
 
 Returns the next detected tone in the stream.  Will return false if we go
@@ -100,7 +109,7 @@ Mike Greb <michael@thegrebs.com>
 
 # COPYRIGHT
 
-Copyright 2013- Mike Greb
+Copyright 2013 - Mike Greb
 
 # LICENSE
 

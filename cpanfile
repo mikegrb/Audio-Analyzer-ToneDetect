@@ -1,7 +1,7 @@
 requires 'perl', '5.008005';
 
-require 'Sort::Key::Top';
-require 'Audio::Analyzer';
+requires 'Audio::Analyzer', '0';
+requires 'Sort::Key::Top', '0';
 
 on test => sub {
     requires 'Test::More', '0.88';

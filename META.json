@@ -36,6 +36,8 @@
       },
       "runtime" : {
          "requires" : {
+            "Audio::Analyzer" : "0",
+            "Sort::Key::Top" : "0",
             "perl" : "5.008005"
          }
       },
