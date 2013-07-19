@@ -1,0 +1,2 @@
+* valid_error_cb should be able to over-ride detected tone, disregard detection,
+  or no-op based on return value
