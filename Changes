@@ -1,6 +1,9 @@
 Revision history for Audio-Analyzer-ToneDetect
 
 {{$NEXT}}
+        - Support for discarding or overriding the detected tone from the
+          valid_error_cb callback.
+        - Tests that valid_error_cb is actually called with correct args
 
 0.01  2013-06-16 23:33:06 EDT
         - Initial release

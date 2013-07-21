@@ -85,7 +85,10 @@ sub get_next_tone {
         $last_detected = $detected_freq;
 
         return $detected_freq unless $self->{valid_tones};
-        return $self->find_closest_valid($detected_freq);
+
+        my ( $valid_tone, $delta ) = $self->find_closest_valid($detected_freq);
+        next unless $valid_tone;
+        return wantarray ? ( $valid_tone, $delta ) : $valid_tone;
     }
     return;
 }
@@ -115,10 +118,16 @@ sub find_closest_valid {
         ? $lower
         : $upper;
 
-    $self->{valid_error_cb}->( $valid_tone, $freq, $freq - $valid_tone )
-        if $self->{valid_error_cb};
+    if ( $self->{valid_error_cb} ) {
+        my $cb_result = $self->{valid_error_cb}
+            ->( $valid_tone, $freq, $freq - $valid_tone );
+        if ( defined $cb_result ) {
+            return if $cb_result == 0;
+            $valid_tone = $cb_result;
+        }
+    }
 
-    return wantarray ? ( $valid_tone, $freq - $valid_tone ) : $valid_tone;
+    return ( $valid_tone, $freq - $valid_tone );
 }
 
 sub _all_match { my $l = shift; $_ == $l->[0] || return 0 for @$l; return 1 }
@@ -238,11 +247,31 @@ uses a builtin list of valid classic Motorola Minitor tones.  Defaults to unset.
 
 A callback that if provided and valid_tones is set will be called just before
 get_next_tone or find_closest_valid returns.  Arguments are the closest valid
-tone, the actual detected tone, the deference between the two in Hertz.
+tone, the actual detected tone, the diference between the two in Hertz.
 
 Example:
 
-  valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_ }
+  valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_; return }
+
+Return value is expected to be one of three possibilities.
+
+=over 4
+
+=item undef
+
+Has no effect on program flow, if you don't want your call back changing stuff
+make sure you have an explicit 'return' as the last line.
+
+=item 0
+
+A return value of 0 discards the tone and continues the get_next_tone loop.
+
+=item N
+
+Any other value replaces the valid detected tone with the return value from the
+call back.
+
+=back
 
 =item rejected_freqs undef or ARRAYREF
 
