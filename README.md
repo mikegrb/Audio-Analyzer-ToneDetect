@@ -65,11 +65,24 @@ Takes the following named parameters:
 
     A callback that if provided and valid\_tones is set will be called just before
     get\_next\_tone or find\_closest\_valid returns.  Arguments are the closest valid
-    tone, the actual detected tone, the deference between the two in Hertz.
+    tone, the actual detected tone, the diference between the two in Hertz.
 
     Example:
 
-        valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_ }
+        valid_error_cb => sub { printf "VF %s DF %s EF %.2f\n", @_; return }
+
+    Return value is expected to be one of three possibilities.
+
+    - undef
+
+        Has no effect on program flow, if you don't want your call back changing stuff
+        make sure you have an explicit 'return' as the last line.
+
+    - A return value of 0 discards the tone and continues the get\_next\_tone loop.
+    - N
+
+        Any other value replaces the valid detected tone with the return value from the
+        call back.
 
 - rejected\_freqs undef or ARRAYREF
 
