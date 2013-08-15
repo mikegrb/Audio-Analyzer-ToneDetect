@@ -1,6 +1,8 @@
 Revision history for Audio-Analyzer-ToneDetect
 
 {{$NEXT}}
+        - Add Travis-CI build status image to POD, lets see if it makes it
+          through POD -> Markdown for GitHub
 
 0.02  2013-07-21 01:29:27 EDT
         - Support for discarding or overriding the detected tone from the
