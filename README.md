@@ -2,6 +2,10 @@
 
 Audio::Analyzer::ToneDetect - Detect freq of tones in an audio file or stream
 
+# TRAVIS-CI BUILD STATUS
+
+<p><img src="https://api.travis-ci.org/mikegrb/Audio-Analyzer-ToneDetect.png" width="77" height="19" alt="Build Status" /></p>
+
 # SYNOPSIS
 
     use Audio::Analyzer::ToneDetect;
@@ -128,10 +132,6 @@ Copyright 2013 - Mike Greb
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
-
-# TRAVIS-CI BUILD STATUS
-
-<p><img src="https://api.travis-ci.org/mikegrb/Audio-Analyzer-ToneDetect.png" width="256" height="256" alt="refract example" /></p>
 
 # SEE ALSO
 
