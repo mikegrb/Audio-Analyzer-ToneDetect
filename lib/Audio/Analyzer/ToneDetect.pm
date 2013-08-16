@@ -51,7 +51,7 @@ sub new {
 
 sub valid_tones {
     my ( $self, $new_tone_map ) = @_;
-    $self->{valid_tones} = $new_tone_map if $new_tone_map;
+    $self->{valid_tones} = [ sort @$new_tone_map  ] if $new_tone_map;
     return $self->{valid_tones};
 }
 
@@ -290,10 +290,8 @@ this is the raw detected tone, not the closest match.  Defaults to empty list.
 =head2 valid_tones
 
 Returns the arraref of valid tones currently being used.  Optionally takes a
-reference to an array of new tones to use as the valid list.  Make sure the list
-is in numerical order as an optimization is used for searching for the closest
-match that requires it be in order.
-
+reference to an array of new tones to use that will be copied to replace the
+current valid list.
 
 =head2 get_next_tone
 

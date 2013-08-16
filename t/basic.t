@@ -59,6 +59,17 @@ use FindBin;
 
     is( $td->get_next_tone, undef, '   ... returning 0 discards tone' );
 
+    my $orig = $td->valid_tones();
+    is( ref($orig), 'ARRAY', 'valid_tones() returns an array ref' );
+
+    cmp_ok( scalar(@$orig), '>=', 200, '   ... that looks right' );
+
+    $td->valid_tones( [ 1, 3, 2 ] );
+
+    my $cur = $td->valid_tones();
+    cmp_ok( scalar(@$cur), '==', 3, '   ... passing new array ref replaces' );
+
+    is_deeply( $cur, [ 1, 2, 3 ], '   ... that is sorted' );
 }
 
 done_testing;
