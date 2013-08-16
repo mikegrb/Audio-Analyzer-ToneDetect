@@ -95,11 +95,8 @@ Takes the following named parameters:
 ## valid\_tones
 
 Returns the arraref of valid tones currently being used.  Optionally takes a
-reference to an array of new tones to use as the valid list.  Make sure the list
-is in numerical order as an optimization is used for searching for the closest
-match that requires it be in order.
-
-
+reference to an array of new tones to use that will be copied to replace the
+current valid list.
 
 ## get\_next\_tone
 
