@@ -2,9 +2,7 @@
 
 Audio::Analyzer::ToneDetect - Detect freq of tones in an audio file or stream
 
-# TRAVIS-CI BUILD STATUS
-
-<p><img src="https://api.travis-ci.org/mikegrb/Audio-Analyzer-ToneDetect.png" width="77" height="19" alt="Build Status" /></p>
+<a href="https://travis-ci.org/mikegrb/Audio-Analyzer-ToneDetect"><img src="https://api.travis-ci.org/mikegrb/Audio-Analyzer-ToneDetect.png" width="77" height="19" alt="Build Status" /></a>
 
 # SYNOPSIS
 
