@@ -268,7 +268,7 @@ Return value is expected to be one of three possibilities.
 Has no effect on program flow, if you don't want your call back changing stuff
 make sure you have an explicit 'return' as the last line.
 
-=item 0
+=item Zero (the number)
 
 A return value of 0 discards the tone and continues the get_next_tone loop.
 

@@ -1,6 +1,7 @@
 Revision history for Audio-Analyzer-ToneDetect
 
 {{$NEXT}}
+        - slight POD change to prevent correct an error
 
 0.03  2013-08-16 18:38:55 EDT
         - Sort new list passed in to valid_tones() and tests for it
