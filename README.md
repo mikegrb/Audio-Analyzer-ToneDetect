@@ -80,7 +80,10 @@ Takes the following named parameters:
         Has no effect on program flow, if you don't want your call back changing stuff
         make sure you have an explicit 'return' as the last line.
 
-    - A return value of 0 discards the tone and continues the get\_next\_tone loop.
+    - Zero (the number)
+
+        A return value of 0 discards the tone and continues the get\_next\_tone loop.
+
     - N
 
         Any other value replaces the valid detected tone with the return value from the

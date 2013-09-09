@@ -59,7 +59,7 @@
          "web" : "https://github.com/mikegrb/Audio-Analyzer-ToneDetect"
       }
    },
-   "version" : "0.03",
+   "version" : "0.04",
    "x_contributors" : [
       "Rev Michael Greb <michael@thegrebs.com>",
       "mikegrb <mgreb@linode.com>"
