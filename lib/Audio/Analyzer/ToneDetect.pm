@@ -10,6 +10,15 @@ use Audio::Analyzer;
 use Carp;
 use Sort::Key::Top 'rnkeytop';
 
+#<<< PerlTidy ignore
+my %dtmf_map = (
+    '697 1209' => 1,   '697 1336' => 2, '697 1477' => 3,   '697 1633' => 'A',
+    '770 1209' => 4,   '770 1336' => 5, '770 1477' => 6,   '770 1633' => 'B',
+    '852 1209' => 7,   '852 1336' => 8, '852 1477' => 9,   '852 1633' => 'C',
+    '941 1209' => '*', '941 1336' => 0, '941 1477' => '#', '941 1633' => 'D',
+);
+#>>>
+
 sub new {
     my ( $class, %args ) = @_;
 
@@ -20,12 +29,16 @@ sub new {
     $self->{chunk_size}      = delete $args{chunk_size}      || 1024;
     $self->{chunk_max}       = delete $args{chunk_max}       || 70;
     $self->{min_tone_length} = delete $args{min_tone_length} || 0.5;
+    $self->{dtmf_mode}       = delete $args{dtmf};
     $self->{valid_tones}     = delete $args{valid_tones};
     $self->{valid_error_cb}  = delete $args{valid_error_cb};
     $self->{rejected_freqs}  = delete $args{rejected_freqs}  || [];
 
     if ( $self->{valid_tones} && $self->{valid_tones} eq 'builtin' ) {
         $self->{valid_tones} = _get_builtin_tones();
+    }
+    elsif ( !$self->{valid_tones} && $self->{dtmf_mode} ) {
+        $self->{valid_tones} = _get_builtin_tones('dtmf');
     }
 
     croak(
@@ -76,6 +89,7 @@ sub get_next_tone {
         my $fft   = $chunk->fft;
         my $top   = rnkeytop { $fft->[0][$_] } 1 => 0 .. $#{ $fft->[0] };
         my $detected_freq = $self->{freqs}[$top];
+
         next if $detected_freq == $last_detected;
         next if grep { $_ == $detected_freq } @{ $self->{rejected_freqs} };
 
@@ -141,10 +155,10 @@ sub _is_pow_of_two {
 }
 
 sub _get_builtin_tones {
+    return [ (qw( 697 770 852 941 1209 1336 1477 1633 )) ] if shift eq 'dtmf';
 
     # via http://sourceforge.net/projects/tonedetect/ not sure complete/accurate
     # want better list
-
     return [ ( qw (
                 282.2 288.5 294.7 296.5 304.7 307.8 313.0 321.4 321.7
                 330.5 335.6 339.6 346.7 349.0 350.5 358.6 358.9 366.0
