@@ -86,23 +86,52 @@ sub get_next_tone {
     while ( $chunk_count < $self->{chunk_max} ) {
         $chunk_count++;
         my $chunk = $self->{analyzer}->next;
+        return unless $chunk;
         my $fft   = $chunk->fft;
-        my $top   = rnkeytop { $fft->[0][$_] } 1 => 0 .. $#{ $fft->[0] };
-        my $detected_freq = $self->{freqs}[$top];
 
-        next if $detected_freq == $last_detected;
-        next if grep { $_ == $detected_freq } @{ $self->{rejected_freqs} };
+        my @detected_freqs;
+        {
+            my $top   = rnkeytop { $fft->[0][$_] } 1 => 0 .. $#{ $fft->[0] };
+            push @detected_freqs, $self->{freqs}[$top];
+
+            last if @detected_freqs == 2;
+            last unless $self->{dtmf_mode};
+
+            # zero the 5 windows centered on freq we just detected
+            $top = 3 if $top < 3;
+            $fft->[0][$_] = 0 for $top - 2 .. $top + 2;
+            redo # detect the second tone
+        }
+        my $detected_freq = join ' ', reverse sort @detected_freqs;
+
+        next if $detected_freq eq $last_detected;
+        next if grep { $_ eq $detected_freq } @{ $self->{rejected_freqs} };
 
         push @buff, $detected_freq;
         shift @buff if @buff > $chunks_required;
         next unless @buff == $chunks_required && _all_match( \@buff );
         $last_detected = $detected_freq;
 
-        return $detected_freq unless $self->{valid_tones};
+        if(!$self->{dtmf_mode}) {
+            return $detected_freq unless $self->{valid_tones};
+            my ( $valid_tone, $delta ) = $self->find_closest_valid($detected_freq);
+            next unless $valid_tone;
+            return wantarray ? ( $valid_tone, $delta ) : $valid_tone;
+        }
+        else { # dtmf_mode is set
+            my @tones = split ' ', $detected_freq;
 
-        my ( $valid_tone, $delta ) = $self->find_closest_valid($detected_freq);
-        next unless $valid_tone;
-        return wantarray ? ( $valid_tone, $delta ) : $valid_tone;
+            for my $tone (@tones) {
+                my ($freq, $offset) = $self->find_closest_valid($tone);
+                $tone = $freq;
+            }
+
+            my $dtmf_freqs = join ' ', @tones;
+            if (exists($dtmf_map{$dtmf_freqs})) {
+                return $dtmf_map{$dtmf_freqs};
+            }
+            return $dtmf_freqs;
+        }
     }
     return;
 }
@@ -144,6 +173,10 @@ sub find_closest_valid {
     return ( $valid_tone, $freq - $valid_tone );
 }
 
+sub _detect_peak_freq {
+
+}
+
 sub _all_match { my $l = shift; $_ == $l->[0] || return 0 for @$l; return 1 }
 
 sub _is_pow_of_two {
@@ -151,7 +184,7 @@ sub _is_pow_of_two {
     # if pow of 2 exactly 1 bit is set all others unset and n - 1 will have
     # that bit unset and all lower bits set thus binary AND of n & n -1 will
     # result in 0
-    return $_[0] != 0 && ( $_[0] & ( $_[0] - 1 ) ) == 0;
+    return $_[0] != 0 && ( $_[0] & ( $_[0] - 1 ) ) eq 0;
 }
 
 sub _get_builtin_tones {
