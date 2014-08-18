@@ -35,7 +35,7 @@ sub new {
     $self->{rejected_freqs}  = delete $args{rejected_freqs}  || [];
 
     if ( $self->{valid_tones} && $self->{valid_tones} eq 'builtin' ) {
-        $self->{valid_tones} = _get_builtin_tones();
+        $self->{valid_tones} = _get_builtin_tones('');
     }
     elsif ( !$self->{valid_tones} && $self->{dtmf_mode} ) {
         $self->{valid_tones} = _get_builtin_tones('dtmf');
@@ -177,7 +177,7 @@ sub _detect_peak_freq {
 
 }
 
-sub _all_match { my $l = shift; $_ == $l->[0] || return 0 for @$l; return 1 }
+sub _all_match { my $l = shift; $_ =~ $l->[0] || return 0 for @$l; return 1 }
 
 sub _is_pow_of_two {
 
