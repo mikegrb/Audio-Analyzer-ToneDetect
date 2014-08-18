@@ -1,6 +1,7 @@
 Revision history for Audio-Analyzer-ToneDetect
 
 {{$NEXT}}
+        - Experimental DTMF support, see t/dtmf.t for example usage
 
 0.04  2013-09-08 22:12:27 EDT
         - slight POD change to prevent correct an error
